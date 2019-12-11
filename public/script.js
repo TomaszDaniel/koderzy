@@ -19,11 +19,6 @@ function fillQuestionElements(data) {
 
     question.innerText = data.question;
 
-    // for (const i in data.answers) {
-    //     const answerEl = document.querySelector(`#answer${Number(i) + 1}`);
-    //     answerEl.innerText = data.answers[i]
-    // }
-
     data.answers.forEach((element, i) => {
         const answerEl = document.querySelector(`#answer${Number(i) + 1}`);
         answerEl.innerText = element;
@@ -59,7 +54,7 @@ function sendAnswer(answerIndex) {
         })
 }
 
-const buttons = document.querySelectorAll('button')
+const buttons = document.querySelectorAll('.answer-button')
 
 for (const button of buttons) {
     button.addEventListener('click', (event) => {
@@ -67,3 +62,68 @@ for (const button of buttons) {
         sendAnswer(answerIndex)
     })
 }
+
+const tipDiv = document.querySelector('#tip')
+
+function handleFriendsAnswer(data) {
+    tipDiv.innerText = data.text
+}
+
+function callToAFriend() {
+    fetch('/help/friend', {
+        method: 'GET',
+    })
+        .then(r => r.json())
+        .then(data => {
+            handleFriendsAnswer(data)
+        })
+}
+
+document.querySelector('#callToAFriend').addEventListener('click', callToAFriend)
+
+function handleHalfOnHalfAnswer(data) {
+    if (typeof data.text === 'string') {
+        tipDiv.innerText = data.text
+    } else {
+        for (const button of buttons) {
+            if (data.answersToRemove.indexOf(button.innerText) > -1) {
+                button.innerText = ""
+            }
+        }
+    }
+}
+
+function halfOnHalf() {
+    fetch('/help/half', {
+        method: 'GET',
+    })
+        .then(r => r.json())
+        .then(data => {
+            handleHalfOnHalfAnswer(data)
+        })
+}
+
+document.querySelector('#halfOnHalf').addEventListener('click', halfOnHalf)
+
+function handleQuestionToTheCrowdAnswer(data) {
+    if (typeof data.text === 'string') {
+        tipDiv.innerText = data.text
+    } else {
+        data.chart.forEach((percent, index) => {
+            buttons[index].innerText = `${buttons[index].innerText}: ${percent}%`;
+        })
+    }
+}
+
+function questionToTheCrowd() {
+    fetch('/help/crowd', {
+        method: 'GET',
+    })
+        .then(r => r.json())
+        .then(data => {
+            handleQuestionToTheCrowdAnswer(data)
+            console.log(data)
+        })
+}
+
+document.querySelector('#questionToTheCrowd').addEventListener('click', questionToTheCrowd)
